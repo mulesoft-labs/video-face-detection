@@ -12,7 +12,7 @@
 
   <style>
   .rect {
-    border: 2px solid #a64ceb;
+    border: 4px dashed #ff0000;
     left: -1000px;
     position: absolute;
     top: -1000px;
@@ -24,13 +24,21 @@
     left: 50%;
     margin: -173px 0 0 -300px;
   }
+
+  .snapshots {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+  }
+  .snapshot {
+    display: block;
+    max-height: 100%;
+    max-width: 100%;
+  }
   </style>
 </head>
 <body>
-  <div class="demo-title">
-    <p>Detect faces (using tracking.js)</p>
-  </div>
-
   <div class="demo-frame">
     <div class="demo-container">
       <!--img id="img" src="images/faces.jpg" /-->
@@ -38,9 +46,18 @@
     </div>
   </div>
 
+  <div class="snapshots">
+    <img class="snapshot" src="">
+    <img class="snapshot" src="">
+    <img class="snapshot" src="">
+  </div>
+
   <script>
     window.onload = function() {
       var img = document.getElementById('img');
+
+      ////////////////
+      // Detection:
 
       var detectables = ['face']; // ['face', 'eye', 'mouth']
       var tracker = new tracking.ObjectTracker(detectables);
@@ -54,17 +71,7 @@
         tracking.track('#img', tracker);
       }
 
-      detect();
-
-      var rects = [];
-      function clearRects()
-      {
-        rects.forEach(function deleteRect(rect) 
-        {
-          rect.parentNode.removeChild(rect);
-        });
-        rects = [];
-      }
+      detect(); // subsequent detect calls will happen when detect runs
 
       tracker.on('track', function(event) {
         console.log('[' + new Date() + '] Looking...');
@@ -76,16 +83,23 @@
         } 
         else 
         {
-          console.log('Detected!');
+          // console.log('Detected!');
           event.data.forEach(function (rect) 
           {
-            rects.push(window.plot(rect.x, rect.y, rect.width, rect.height));
+            rects.push(drawRect(rect.x, rect.y, rect.width, rect.height));
+            snapshot(rect);
           });
         }
         setTimeout(detect, 100);
       });
 
-      window.plot = function(x, y, w, h) {
+      ///////////////////////////
+      // Highlight detected face:
+
+     var rects = []; // The bounding boxes drawn around the detected face
+
+      function drawRect(x, y, w, h) 
+      {
         var rect = document.createElement('div');
         document.querySelector('.demo-container').appendChild(rect);
         rect.classList.add('rect');
@@ -94,7 +108,44 @@
         rect.style.left = (img.offsetLeft + x) + 'px';
         rect.style.top = (img.offsetTop + y) + 'px';
         return rect;
-      };
+      }
+
+      function clearRects()
+      {
+        rects.forEach(function deleteRect(rect) 
+        {
+          rect.parentNode.removeChild(rect);
+        });
+        rects = [];
+      }
+
+      ///////////////////////////
+      // Snapshot detected face:
+
+      function snapshot(rect)
+      {
+        var snapshotBuffer = document.createElement('canvas');
+        snapshotBuffer.width = rect.width;
+        snapshotBuffer.height = rect.height;
+        var context = snapshotBuffer.getContext('2d');
+        var img = document.getElementById('img');
+        context.drawImage(img, rect.x, rect.y, rect.width, rect.height, 0, 0, img.offsetWidth, img.offsetHeight);
+        var snapshotBase64 = snapshotBuffer.toDataURL('image/png');
+        onSnapshot(snapshotBase64);
+      }
+      
+      function onSnapshot(snapshotBase64)
+      {
+        // Display the last 3 snapshots
+        containers = Array.from(document.getElementsByClassName('snapshot'));
+        for (var i=containers.length-1; i>0; i--)
+        {
+          containers[i].src = containers[i-1].src;
+        }
+        containers[0].src = snapshotBase64;
+      }
+
+
     };
   </script>
 
