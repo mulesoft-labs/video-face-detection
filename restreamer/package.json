@@ -1,0 +1,9 @@
+{
+  "name": "localhost-video-restreamer",
+  "description": "Restream video from an IP camera via localhost",
+  "version": "0.1.0",
+  "dependencies": {
+    "http-proxy": "1.16.2",
+    "express": "^4.15.2"
+  }
+}

@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Localhost Face Detection</title>
+  <link rel="stylesheet" href="css/demo.css">
+
+  <script src="js/tracking-min.js"></script>
+  <script src="js/data/face-min.js"></script>
+  <script src="js/data/eye-min.js"></script>
+  <script src="js/data/mouth-min.js"></script>
+
+  <style>
+  .rect {
+    border: 2px solid #a64ceb;
+    left: -1000px;
+    position: absolute;
+    top: -1000px;
+  }
+
+  #img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -173px 0 0 -300px;
+  }
+  </style>
+</head>
+<body>
+  <div class="demo-title">
+    <p>Detect faces (using tracking.js)</p>
+  </div>
+
+  <div class="demo-frame">
+    <div class="demo-container">
+      <!--img id="img" src="images/faces.jpg" /-->
+      <img id="img" src="/videostream.cgi" />
+    </div>
+  </div>
+
+  <script>
+    window.onload = function() {
+      var img = document.getElementById('img');
+
+      var detectables = ['face']; // ['face', 'eye', 'mouth']
+      var tracker = new tracking.ObjectTracker(detectables);
+      tracker.setInitialScale(4);
+      tracker.setStepSize(2);
+      tracker.setEdgesDensity(0.1);
+      //tracker.setStepSize(1.7);
+
+      function detect()
+      {
+        tracking.track('#img', tracker);
+      }
+
+      detect();
+
+      var rects = [];
+      function clearRects()
+      {
+        rects.forEach(function deleteRect(rect) 
+        {
+          rect.parentNode.removeChild(rect);
+        });
+        rects = [];
+      }
+
+      tracker.on('track', function(event) {
+        console.log('[' + new Date() + '] Looking...');
+        clearRects();
+        if (event.data.length === 0) 
+        {
+          // No targets were detected in this frame.
+          // console.log('Detected nothing in ', event);
+        } 
+        else 
+        {
+          console.log('Detected!');
+          event.data.forEach(function (rect) 
+          {
+            rects.push(window.plot(rect.x, rect.y, rect.width, rect.height));
+          });
+        }
+        setTimeout(detect, 100);
+      });
+
+      window.plot = function(x, y, w, h) {
+        var rect = document.createElement('div');
+        document.querySelector('.demo-container').appendChild(rect);
+        rect.classList.add('rect');
+        rect.style.width = w + 'px';
+        rect.style.height = h + 'px';
+        rect.style.left = (img.offsetLeft + x) + 'px';
+        rect.style.top = (img.offsetTop + y) + 'px';
+        return rect;
+      };
+    };
+  </script>
+
+</body>
+</html>

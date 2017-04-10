@@ -1,0 +1,9 @@
+{
+  "name": "localhost-dashboard",
+  "description": "Serve dashboard via localhost",
+  "version": "0.1.0",
+  "dependencies": {
+    "http-proxy": "1.16.2",
+    "express": "^4.15.2"
+  }
+}
