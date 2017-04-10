@@ -1,6 +1,9 @@
 function Detector(imgSelector, detectables)
 {
 
+  this.refreshRate = 100; // the default in ms
+  this.maxSnapshotRate = 1000; // the default in ms
+
   var img = document.querySelector(imgSelector);
 
   var tracker = new tracking.ObjectTracker(detectables);
@@ -40,63 +43,76 @@ function Detector(imgSelector, detectables)
     rects = [];
   }
 
-  this.start = function start(refreshRate)
+  var running = false;
+  var snapshotInterval;
+  var lastSnapshotBuffer;
+
+  tracker.on('track', function (event) 
   {
-    refreshRate = refreshRate || 100; // default is 100ms
+    console.log('[' + new Date() + '] Looking...');
+    clearRects();
+    if (event.data.length === 0) 
+    {
+      // No targets were detected in this frame.
+      // console.log('Detected nothing in ', event);
+    } 
+    else 
+    {
+      // console.log('Detected!');
+      event.data.forEach(function (rect) 
+      {
+        rects.push(drawRect(rect.x, rect.y, rect.width, rect.height));
+        lastSnapshotBuffer = snapshot(rect);
+      });
+    }
+    if (running)
+    {
+      setTimeout(function () { detect(); }, this.refreshRate);
+    }
+    
+  });
+
+  this.start = function start()
+  {
+    running = true;
+
     detect(); // subsequent detect calls will be setup when detect runs
 
-    tracker.on('track', function (event) 
+    snapshotInterval = setInterval(function snapshotIfNeeded()
     {
-      console.log('[' + new Date() + '] Looking...');
-      clearRects();
-      if (event.data.length === 0) 
+      if (lastSnapshotBuffer && this.onSnapshot)
       {
-        // No targets were detected in this frame.
-        // console.log('Detected nothing in ', event);
-      } 
-      else 
-      {
-        // console.log('Detected!');
-        event.data.forEach(function (rect) 
-        {
-          rects.push(drawRect(rect.x, rect.y, rect.width, rect.height));
-          snapshot(rect);
-        });
+        this.onSnapshot(lastSnapshotBuffer);
+        lastSnapshotBuffer = '';
       }
-      setTimeout(function () { detect(); }, refreshRate);
-    });
+    }, this.maxSnapshotRate);
+
+  }
+
+  this.stop = function stop()
+  {
+    running = false;
+
+    if (snapshotInterval)
+    {
+      clearInterval(snapshotInterval);
+    }
   }
 
   ///////////////////////////
   // Snapshot detected face:
 
-  console.log('In definition, img is ', img);
   var snapshot = function snapshot(rect)
   {
     var snapshotBuffer = document.createElement('canvas');
     snapshotBuffer.width = rect.width;
     snapshotBuffer.height = rect.height;
     var context = snapshotBuffer.getContext('2d');
-    console.log('In snapshot, img is ', img);
     context.drawImage(img, rect.x, rect.y, rect.width, rect.height, 
       0, 0, img.offsetWidth, img.offsetHeight);
     var snapshotBase64 = snapshotBuffer.toDataURL('image/png');
-    if (this.onSnapshot) onSnapshot(snapshotBase64);
+    return snapshotBase64;
   }
 
-}
-
-
-
-
-function onSnapshot(snapshotBase64)
-{
-  // Display the last 3 snapshots
-  containers = Array.from(document.getElementsByClassName('snapshot'));
-  for (var i=containers.length-1; i>0; i--)
-  {
-    containers[i].src = containers[i-1].src;
-  }
-  containers[0].src = snapshotBase64;
 }
 
