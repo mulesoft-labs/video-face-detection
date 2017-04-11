@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "dependencies": {
     "http-proxy": "1.16.2",
-    "express": "^4.15.2"
+    "express": "^4.15.2",
+    "http-parser-js": "0.4.4"
   }
 }
