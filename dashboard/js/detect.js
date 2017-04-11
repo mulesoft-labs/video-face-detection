@@ -1,8 +1,10 @@
 function Detector(imgSelector, detectables)
 {
+  var that = this;
 
   this.refreshRate = 100; // the default in ms
   this.maxSnapshotRate = 1000; // the default in ms
+  this.logging = false;
 
   var img = document.querySelector(imgSelector);
 
@@ -45,11 +47,12 @@ function Detector(imgSelector, detectables)
 
   var running = false;
   var snapshotInterval;
-  var lastSnapshotBuffer;
+  var lastSnapshotBuffer = '';
+
 
   tracker.on('track', function (event) 
   {
-    console.log('[' + new Date() + '] Looking...');
+    if (that.logging) console.log('[' + new Date() + '] Looking...');
     clearRects();
     if (event.data.length === 0) 
     {
@@ -63,26 +66,30 @@ function Detector(imgSelector, detectables)
       {
         rects.push(drawRect(rect.x, rect.y, rect.width, rect.height));
         lastSnapshotBuffer = snapshot(rect);
+        if (that.logging) console.log('Grabbed snapshot');
       });
     }
     if (running)
     {
-      setTimeout(function () { detect(); }, this.refreshRate);
+      setTimeout(function () { detect(); }, that.refreshRate);
     }
     
   });
 
   this.start = function start()
   {
+    var that = this;
+
     running = true;
 
     detect(); // subsequent detect calls will be setup when detect runs
 
     snapshotInterval = setInterval(function snapshotIfNeeded()
     {
-      if (lastSnapshotBuffer && this.onSnapshot)
+      if (lastSnapshotBuffer.length && that.onSnapshot)
       {
-        this.onSnapshot(lastSnapshotBuffer);
+        if (that.logging) console.log("Displaying snapshot");
+        that.onSnapshot(lastSnapshotBuffer);
         lastSnapshotBuffer = '';
       }
     }, this.maxSnapshotRate);

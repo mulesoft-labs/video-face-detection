@@ -59,10 +59,11 @@
 
       var detectables = ['face']; // ['face', 'eye', 'mouth']
       var detector = new Detector('#img', detectables);
+      detector.logging = false;
 
       function onSnapshot(snapshotBase64)
       {
-        // Display the last 3 snapshots
+        // Display the last n snapshots, according to how many snapshot containers are found
         containers = Array.from(document.getElementsByClassName('snapshot'));
         for (var i=containers.length-1; i>0; i--)
         {
