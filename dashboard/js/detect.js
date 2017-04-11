@@ -29,7 +29,9 @@ function Detector(imgSelector, detectables)
     var rect = document.createElement('div');
     document.querySelector('.demo-container').appendChild(rect);
     rect.classList.add('rect');
+    rect.w = w;
     rect.style.width = w + 'px';
+    rect.h = h;
     rect.style.height = h + 'px';
     rect.style.left = (this.img.offsetLeft + x) + 'px';
     rect.style.top = (this.img.offsetTop + y) + 'px';
@@ -45,10 +47,14 @@ function Detector(imgSelector, detectables)
     rects = [];
   }
 
+  //Snapshots will be taken every moment a face is detected, but only 
+  // the last one will be held in a buffer, and only when there is something
+  // in that buffer will the snapshot interval timer fire the onSnapshot event
+  // when it goes off
+
   var running = false;
   var snapshotInterval;
   var lastSnapshotBuffer = '';
-
 
   tracker.on('track', function (event) 
   {
@@ -57,11 +63,9 @@ function Detector(imgSelector, detectables)
     if (event.data.length === 0) 
     {
       // No targets were detected in this frame.
-      // console.log('Detected nothing in ', event);
     } 
     else 
     {
-      // console.log('Detected!');
       event.data.forEach(function (rect) 
       {
         rects.push(drawRect(rect.x, rect.y, rect.width, rect.height));
@@ -107,18 +111,37 @@ function Detector(imgSelector, detectables)
   }
 
   ///////////////////////////
-  // Snapshot detected face:
+  // Snapshot the detected face:
 
   var snapshot = function snapshot(rect)
   {
-    var snapshotBuffer = document.createElement('canvas');
-    snapshotBuffer.width = rect.width;
-    snapshotBuffer.height = rect.height;
-    var context = snapshotBuffer.getContext('2d');
+
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    canvas.width = rect.width;
+    canvas.height = rect.height;
     context.drawImage(img, rect.x, rect.y, rect.width, rect.height, 
-      0, 0, img.offsetWidth, img.offsetHeight);
-    var snapshotBase64 = snapshotBuffer.toDataURL('image/png');
+      0, 0, rect.width, rect.height);
+
+    // xExpansion = 0.25;
+    // yExpansion = 0.25;
+    // effectiveX = Math.max(rect.x - xExpansion * rect.width,  0);
+    // effectiveY = Math.max(rect.y - yExpansion * rect.height, 0);
+    // effectiveXmax = Math.min(rect.x + rect.width +  xExpansion * rect.width,  img.width);
+    // effectiveYmax = Math.min(rect.y + rect.height + yExpansion * rect.height, img.height);
+    // effectiveWidth = effectiveXmax  - effectiveX;
+    // effectiveHeight = effectiveYmax - effectiveY;
+    // console.log(rect.x, rect.y, rect.width, rect.height);
+    // console.log('-->', effectiveX, effectiveY, effectiveWidth, effectiveHeight);
+    // canvas.width = effectiveWidth;
+    // canvas.height = effectiveX;
+    // context.drawImage(img, effectiveX, effectiveY, effectiveWidth, effectiveHeight, 
+    //   0, 0, effectiveWidth, effectiveHeight);
+    
+    var snapshotBase64 = canvas.toDataURL('image/png');
     return snapshotBase64;
+
+
   }
 
 }
