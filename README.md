@@ -7,13 +7,20 @@ and subjected to manipulation by JavaScript -- specifically, for face detection 
 # Usage
 
 Install as usual via
-`npm install`
+```
+npm install
+```
 
 Run 
-`node index.js`
-to run the server, which proxies the video feed and serves the static content, all off the same IP/port.
+```
+node index.js http://url.to/camera.feed [port to serve on] [cameraUsername:password]
+```
+to run the server, which proxies the video feed and serves the static content, all off the same IP/port. Example: 
+`node index.js http://192.168.0.171/mjpeg.cgi admin:`
 
-Load `http://localhost:8080/index.html` in the browser.
+You will likely need to change `dashboard/index.html` to update the path to the camera there too.
+
+Load `http://localhost:8080/index.html` in the browser. 
 
 The relevant files are then `index.js` (the server) and everything in `dashboard` (the web page).
 
