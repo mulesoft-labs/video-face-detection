@@ -7,8 +7,9 @@
 
   <script src="js/tracking-min.js"></script>
   <script src="js/data/face-min.js"></script>
-  <script src="js/data/eye-min.js"></script>
-  <script src="js/data/mouth-min.js"></script>
+  <!--script src="js/data/eye-min.js"></script-->
+  <!--script src="js/data/mouth-min.js"></script-->
+  <script src="js/dat.gui.min.js"></script>
 
   <script src="js/detect.js"></script>
 
@@ -44,8 +45,8 @@
   <div class="demo-frame">
     <div class="demo-container">
       <!--img id="img" src="images/faces.jpg" /-->
-      <!--img id="img" src="/videostream.cgi" /-->
-      <img id="img" src="/mjpegStreamer.cgi" />
+      <img id="img" src="/videostream.cgi" />
+      <!--img id="img" src="/video.mjpeg" /-->
     </div>
   </div>
 
@@ -59,7 +60,8 @@
     window.onload = function() {
 
       var detectables = ['face']; // ['face', 'eye', 'mouth']
-      var detector = new Detector('#img', detectables);
+
+      var detector = new Detector('#img', detectables, new dat.GUI());
       detector.logging = false;
 
       function onSnapshot(snapshotBase64)

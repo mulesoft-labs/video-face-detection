@@ -1,4 +1,4 @@
-function Detector(imgSelector, detectables)
+function Detector(imgSelector, detectables, gui)
 {
   var that = this;
 
@@ -13,6 +13,12 @@ function Detector(imgSelector, detectables)
   tracker.setStepSize(2);
   tracker.setEdgesDensity(0.1);
   //tracker.setStepSize(1.7);
+  if (gui)
+  {
+    gui.add(tracker, 'edgesDensity', 0.1, 0.5).step(0.01);
+    gui.add(tracker, 'initialScale', 1.0, 10.0).step(0.1);
+    gui.add(tracker, 'stepSize', 1, 5).step(0.1);
+  }
 
   var detect = function detect()
   {
@@ -68,6 +74,12 @@ function Detector(imgSelector, detectables)
     {
       event.data.forEach(function (rect) 
       {
+        console.log(
+          { 
+            edgesDensity: tracker.getEdgesDensity(), 
+            initialScale: tracker.getInitialScale(),
+            stepSize: tracker.getStepSize()
+          });
         rects.push(drawRect(rect.x, rect.y, rect.width, rect.height));
         lastSnapshotBuffer = snapshot(rect);
         if (that.logging) console.log('Grabbed snapshot');
@@ -137,7 +149,7 @@ function Detector(imgSelector, detectables)
     // canvas.height = effectiveX;
     // context.drawImage(img, effectiveX, effectiveY, effectiveWidth, effectiveHeight, 
     //   0, 0, effectiveWidth, effectiveHeight);
-    
+
     var snapshotBase64 = canvas.toDataURL('image/png');
     return snapshotBase64;
 

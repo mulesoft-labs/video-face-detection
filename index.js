@@ -50,6 +50,7 @@ app.get(cameraPath, function (req, res)
 });
 
 app.use(express.static('dashboard'))
+app.use(express.static('../connect2017-uridemo-factory-dashboard'))
 
 app.listen(webServerPort, function () 
 {
